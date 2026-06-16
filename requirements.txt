@@ -1,0 +1,13 @@
+# Core analysis libraries
+pandas
+numpy
+matplotlib
+seaborn
+scipy
+statsmodels
+networkx
+scikit-learn
+prophet
+
+# Notebook runtime
+jupyter
