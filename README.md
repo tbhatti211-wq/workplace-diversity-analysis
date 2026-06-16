@@ -106,49 +106,32 @@ workplace-diversity-analysis/
 
 ## 🔑 Key Design Decisions
 
-**Why NetworkX instead of a manual recursive function?**
-NetworkX is purpose-built for graph traversal. `nx.descendants()` handles the full tree walk internally with no custom recursion needed. A manual recursive function would work but introduces more opportunity for bugs and is harder to read. For a DEA story, I can explain both approaches — NetworkX in code, recursive logic in the interview.
-
-**Why exclude the CEO from modeling?**
-One employee, one salary ($700K), zero variance. Standard deviation is NaN. Linear Regression tried to memorize a single data point and produced a dept_CEO coefficient of -919K, distorting every other coefficient in the model. The CEO record teaches the model nothing and actively misleads it. Both runs (with and without CEO) are shown in the notebook to demonstrate the impact.
-
-**Why Linear Regression first despite tree models being more powerful?**
-Coefficients are directly interpretable as dollar impacts. If sex_encoded carries a large negative coefficient after controlling for department and experience, that is a one-number fairness finding any HR executive can understand. Random Forest and Gradient Boosting give feature importance but not direction or magnitude. Linear Regression is the fairness lens; tree models are the accuracy benchmark.
-
-**Why one-hot encoding for department but ordinal for level and degree?**
-Department has no natural order. Engineering is not greater than or less than Marketing. One-hot treats each department independently. Level (IC through CEO) and degree (High School through PhD) both have meaningful natural order, so ordinal encoding preserves that signal without creating unnecessary columns.
+| Decision | Why |
+|---|---|
+| **NetworkX for headcount** | Org chart is a graph. `nx.descendants()` returns full downstream reports in one line. Knew the recursive version too, but less to break this way. |
+| **Dropped the CEO** | One row, fixed $700K, zero variance. Linear Regression latched onto it and threw a -919K coefficient that skewed everything. Kept both runs in the notebook to show the impact. |
+| **Linear Regression first** | Coefficients are in dollars, so the sex coefficient answers the fairness question directly. Tree models predict better but only rank features, not direction or size. |
+| **One-hot vs ordinal** | Departments have no order, so one-hot. Level and degree do (IC→CEO, HS→PhD), so ordinal keeps the ranking in one column. |
 
 ---
 
 ## 🔍 Key Findings
 
-**Finding 1: No Direct Gender Discrimination Detected**
-Males average ~$200K vs females ~$172K, a $28K surface gap. However all three models assigned near zero importance to gender after controlling for other factors. The gap is likely explained by female employees being concentrated in HR, the lowest paid department — not direct pay discrimination.
-
-**Finding 2: Severe Department Pay Gap (Critical)**
-HR averages $84,560 vs Engineering at $243,525, a $160K gap. dept_HR was the dominant salary predictor across all models at 58% to 80% feature importance. Most urgent fairness concern in the dataset.
-
-**Finding 3: Level Progression is Fair**
-Salary increases consistently from IC through Executive. Seniority is being rewarded appropriately. No fairness concern here.
-
-**Finding 4: Degree is Not Being Rewarded**
-PhD and High School employees earn essentially the same salary. Inconsistent with standard compensation practices if the company values or requires advanced education in hiring.
+| Finding | Detail |
+|---|---|
+| **Gender gap fades after controls** | Raw gap is ~$28K (men $200K, women $172K), but all models drop gender to near-zero weight once department, level, and experience are in. Likely a distribution issue: more women in HR, the lowest paid dept. |
+| **Department gap is the real problem** | HR $84,560 vs Engineering $243,525, a $160K spread. dept_HR was the top predictor in every model (58–80% importance). This is the one to act on. |
+| **Level progression is healthy** | Pay rises cleanly IC → Executive. Seniority is rewarded as expected. |
+| **Degree barely moves pay** | PhD and high school land at roughly the same salary. Out of step if degrees are a hiring expectation. |
 
 ---
 
 ## 📋 HR Recommendations
 
-**1. Investigate HR Compensation Urgently**
-Benchmark HR salaries against market rates and adjust if below industry standard.
-
-**2. Audit Gender Distribution by Department**
-Investigate whether female employees are disproportionately placed in lower paying departments and whether promotion practices are equitable.
-
-**3. Revisit Degree Based Pay Policy**
-If advanced degrees are required in hiring, compensation should reflect that investment.
-
-**4. Collect Better Data**
-65% of salary variance is unexplained. Add performance ratings, tenure, and location data to enable stronger future analysis.
+1. **Fix HR pay first.** Benchmark HR roles against market and adjust. The $160K gap is the headline.
+2. **Check why women cluster in HR.** The gender gap comes from placement, not equal-role pay. Audit hiring and promotion.
+3. **Decide if degrees should matter.** They move pay by nothing right now. Align the pay structure with hiring expectations.
+4. **Collect richer data.** Two thirds of salary variance is unexplained. Add performance, tenure, and location.
 
 ---
 
@@ -174,11 +157,7 @@ If advanced degrees are required in hiring, compensation should reflect that inv
 
 ## 🧑‍💻 About This Project
 
-This project was built as part of the Data Engineering Academy curriculum to demonstrate end-to-end analytical thinking on a real-world HR fairness problem:
-- **Hierarchy reasoning** — derived org levels from raw relational data using graph traversal, not lookup tables
-- **Outlier handling** — identified and documented CEO record distortion with before/after model comparison
-- **Fairness thinking** — separated surface-level gaps from controlled findings using model coefficients and feature importance
-- **Business storytelling** — findings and recommendations written for a non-technical HR audience, not just a data team
+Built as part of the Data Engineering Academy curriculum. The interesting part was not the modeling but the reasoning around it: deriving org levels from raw relational data instead of a lookup column, catching the CEO record before it wrecked the regression, and being careful to separate the surface gender gap from what actually holds up once you control for department. The findings and recommendations are written for an HR reader, not a data team, since that is who would actually act on them.
 
 **Author:** Talib Hussain
 **GitHub:** [github.com/tbhatti211-wq](https://github.com/tbhatti211-wq)
